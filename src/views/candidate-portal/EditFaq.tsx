@@ -7,6 +7,7 @@ import { ArrowLeft } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import faqsService from '../../services/faqs.service';
 import type { Faq } from '../../services/faqs.service';
+import candidatesService from '../../services/candidates.service';
 import { Alert, showAlert } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
 import { FormSkeleton } from '../../components/skeletons';
@@ -33,7 +34,10 @@ const EditFaq = () => {
     const fetchItem = async () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       try {
-        const res = await faqsService.get(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const profileRes = await candidatesService.getProfile({ module_unique_id: moduleId });
+        if (!profileRes.success || !profileRes.data) { setLoadingItem(false); return; }
+        const cId = profileRes.data.unique_id;
+        const res = await faqsService.get(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId, candidate_unique_id: cId } as any);
         if (res.success && res.data) { setItem(res.data); reset({ question: res.data.question, answer: res.data.answer }); }
       } catch (err) { console.error('Failed to fetch FAQ:', err); setError('Failed to load FAQ details'); showAlert('error-alert'); } finally { setLoadingItem(false); }
     };

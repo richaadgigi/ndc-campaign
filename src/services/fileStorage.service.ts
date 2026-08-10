@@ -1,4 +1,4 @@
-import api from './api';
+﻿import api from './api';
 
 export interface FileStorage {
   unique_id: string;
@@ -37,35 +37,35 @@ const buildQueryParams = (params: Record<string, any>): string => {
 
 const fileStorageService = {
   getAll: async (params: PaginationParams): Promise<FileStorageListResponse> => {
-    const response = await api.get(`/user/all/file/storage?${buildQueryParams(params)}`);
+    const response = await api.get(`/portal/all/file/storage?${buildQueryParams(params)}`);
     return response.data;
   },
   get: async (unique_id: string, params: { module_unique_id: string; sub_module_unique_id?: string }): Promise<FileStorageResponse> => {
-    const response = await api.get(`/user/file/storage?${buildQueryParams({ unique_id, ...params })}`);
+    const response = await api.get(`/portal/file/storage?${buildQueryParams({ unique_id, ...params })}`);
     return response.data;
   },
   search: async (params: SearchParams): Promise<FileStorageListResponse> => {
-    const response = await api.get(`/user/search/all/file/storage?${buildQueryParams(params)}`);
+    const response = await api.get(`/portal/search/all/file/storage?${buildQueryParams(params)}`);
     return response.data;
   },
   filter: async (params: FilterParams): Promise<FileStorageListResponse> => {
-    const response = await api.get(`/user/filter/all/file/storage?${buildQueryParams(params)}`);
+    const response = await api.get(`/portal/filter/all/file/storage?${buildQueryParams(params)}`);
     return response.data;
   },
   add: async (data: { title?: string; file: string; file_type: string; file_public_id: string; candidate_unique_id: string }, params: { module_unique_id: string; sub_module_unique_id?: string }): Promise<{ success: boolean; message: string }> => {
-    const response = await api.post(`/user/file/storage/add?${buildQueryParams(params)}`, data);
+    const response = await api.post(`/portal/file/storage/add?${buildQueryParams(params)}`, data);
     return response.data;
   },
   editDetails: async (data: { unique_id: string; title?: string }, params: { module_unique_id: string; sub_module_unique_id?: string }): Promise<{ success: boolean; message: string }> => {
-    const response = await api.put(`/user/file/storage/edit/details?${buildQueryParams(params)}`, data);
+    const response = await api.put(`/portal/file/storage/edit/details?${buildQueryParams(params)}`, data);
     return response.data;
   },
   editFile: async (data: { unique_id: string; file: string; file_type: string; file_public_id: string }, params: { module_unique_id: string; sub_module_unique_id?: string }): Promise<{ success: boolean; message: string }> => {
-    const response = await api.put(`/user/file/storage/edit/file?${buildQueryParams(params)}`, data);
+    const response = await api.put(`/portal/file/storage/edit/file?${buildQueryParams(params)}`, data);
     return response.data;
   },
   delete: async (unique_id: string, params: { module_unique_id: string; sub_module_unique_id?: string }): Promise<{ success: boolean; message: string }> => {
-    const response = await api.delete(`/user/file/storage?${buildQueryParams(params)}`, { data: { unique_id } });
+    const response = await api.delete(`/portal/file/storage?${buildQueryParams(params)}`, { data: { unique_id } });
     return response.data;
   },
 };

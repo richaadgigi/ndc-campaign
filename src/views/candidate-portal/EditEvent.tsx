@@ -8,6 +8,7 @@ import { ArrowLeft } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import eventsService from '../../services/events.service';
 import type { Event } from '../../services/events.service';
+import candidatesService from '../../services/candidates.service';
 import { Alert, showAlert, ImageUpload } from '../../components/common';
 import { extractErrorMessage, sanitizeHTML } from '../../utils/formatters';
 import { FormSkeleton } from '../../components/skeletons';
@@ -48,7 +49,10 @@ const EditEvent = () => {
     const fetchItem = async () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       try {
-        const res = await eventsService.get(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const profileRes = await candidatesService.getProfile({ module_unique_id: moduleId });
+        if (!profileRes.success || !profileRes.data) { setLoadingItem(false); return; }
+        const cId = profileRes.data.unique_id;
+        const res = await eventsService.get(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId, candidate_unique_id: cId } as any);
         if (res.success && res.data) {
           setItem(res.data);
           reset({

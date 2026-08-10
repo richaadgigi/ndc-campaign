@@ -1,6 +1,6 @@
 
 export const APP_NAME = 'NDC Campaign';
-export const APP_SHORT_NAME = 'NDC Campaign CRM';
+export const APP_SHORT_NAME = 'NDC Campaign Portal';
 export const COMPANY_NAME = 'NDC Campaign';
 export const COMPANY_LOCATION = '';
 

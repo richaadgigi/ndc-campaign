@@ -72,6 +72,16 @@ export const authService = {
     const response = await api.put('/user/update/profile/password', payload);
     return response.data;
   },
+
+  portalSignIn: async (payload: { login_id: string; password: string }): Promise<LoginResponse> => {
+    const response = await api.post('/auth/portal/signin', payload);
+    return response.data;
+  },
+
+  portalVerifyOtp: async (payload: { login_id: string; otp: string }): Promise<LoginResponse> => {
+    const response = await api.post('/auth/portal/otp/verify', payload);
+    return response.data;
+  },
 };
 
 export default authService;

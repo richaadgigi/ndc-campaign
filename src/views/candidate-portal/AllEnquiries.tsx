@@ -2,11 +2,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '../../components/layout';
-import { Renew, TrashCan, View, OverflowMenuVertical, Checkmark } from '@carbon/icons-react';
+import { Renew, Add, TrashCan, View, OverflowMenuVertical, Checkmark, Email } from '@carbon/icons-react';
 import { extractErrorMessage } from '../../utils/formatters';
 import { useGeneral } from '../../context/GeneralContext';
 import enquiriesService from '../../services/enquiries.service';
 import type { Enquiry } from '../../services/enquiries.service';
+import type { EnquiryStats } from '../../services/enquiries.service';
+import { MetricCard } from '../../components/overview';
 import { Alert, showAlert, Pagination, EmptyState, ErrorState, FilterModal } from '../../components/common';
 import type { FilterField, FilterValues } from '../../components/common';
 import { ConfirmModal } from '../../components/modals';
@@ -18,6 +20,7 @@ const AllEnquiries = () => {
   const { getAccessIds, checkAccess } = useGeneral();
   const [filterValues, setFilterValues] = useState<FilterValues>({ start_date: '', end_date: '' });
   const [items, setItems] = useState<Enquiry[]>([]);
+  const [statsData, setStatsData] = useState<EnquiryStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [actionError, setActionError] = useState('');
@@ -33,6 +36,7 @@ const AllEnquiries = () => {
 
   const accessResult = moduleId ? checkAccess(moduleId, subModuleId) : { hasAccess: false, accessTypes: [] };
   const canEdit = accessResult.accessTypes.includes('edit');
+  const canAdd = accessResult.accessTypes.includes('add');
   const canDelete = accessResult.accessTypes.includes('delete');
 
   const handleResponse = (response: any) => {
@@ -93,6 +97,19 @@ const AllEnquiries = () => {
   const handleRefresh = () => { setFilterValues({ start_date: '', end_date: '' }); setCurrentPage(1); fetchItems(); };
 
   useEffect(() => {
+
+    if (!moduleId || !subModuleId) return;
+
+    enquiriesService.portalGetStats({ module_unique_id: moduleId, sub_module_unique_id: subModuleId })
+
+      .then(res => { if (res.success && res.data) setStatsData(res.data); })
+
+      .catch(err => console.error('Failed to load stats:', err));
+
+  }, [moduleId, subModuleId]);
+
+
+  useEffect(() => {
     if (!moduleId || !subModuleId) return;
     if (!hasActiveFilters) fetchItems();
   }, [moduleId, subModuleId, currentPage, fetchItems]);
@@ -101,6 +118,11 @@ const AllEnquiries = () => {
     <div>
       <Navbar title="Enquiries" subtitle="Manage candidate portal enquiries" />
       <div className="xui-py-1-half">
+        {statsData && (
+          <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-3 xui-grid-gap-1 xui-mb-1-half">
+            <MetricCard title="Total Enquiries" value={statsData.total_enquiries ?? 0} icon={<Email size={24} />} iconBgColor="var(--info-light)" iconColor="var(--info)" />
+          </div>
+        )}
         <div className="xui-d-flex xui-flex-ai-center xui-flex-jc-space-between xui-mb-1-half">
           <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-1">
             <FilterModal id="enquiries" fields={filterFields} values={filterValues} onApply={handleApplyFilters} onClear={handleClearFilters} />
@@ -109,6 +131,7 @@ const AllEnquiries = () => {
 <button onClick={handleRefresh} className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }} disabled={loading}>
               <span className="icon-container"><Renew size={16} /></span> Refresh
             </button>
+          {canAdd && <button onClick={() => router.push('/dashboard/candidate-portal/enquiries/add')} className="xui-btn xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ backgroundColor: 'var(--primary-600)', color: 'var(--secondary-700)', whiteSpace: 'nowrap' }}><span className="icon-container"><Add size={16} /></span> Add Enquiry</button>}
           </div>
         </div>
 
@@ -141,8 +164,8 @@ const AllEnquiries = () => {
                       <td className="xui-font-sz-85 xui-opacity-6">{item.phone_number || '-'}</td>
                       <td className="xui-font-sz-85">{item.title}</td>
                       <td>
-                        <span className={`xui-badge ${item.enquiry_status === 'completed' ? 'xui-badge-success' : 'xui-badge-warning'} xui-font-sz-70`}>
-                          {item.enquiry_status === 'completed' ? 'Yes' : 'No'}
+                        <span className={`xui-badge ${item.enquiry_status?.toLowerCase() === 'completed' ? 'xui-badge-success' : 'xui-badge-warning'} xui-font-sz-70`}>
+                          {item.enquiry_status?.toLowerCase() === 'completed' ? 'Yes' : 'No'}
                         </span>
                       </td>
                       <td className="xui-font-sz-85 xui-opacity-6">{new Date(item.createdAt).toLocaleDateString()}</td>
@@ -150,9 +173,9 @@ const AllEnquiries = () => {
                         <td>
                           <div className="xui-tooltip" xui-set="left">
                             <span className="xui-cursor-pointer xui-d-inline-flex"><OverflowMenuVertical size={20} /></span>
-                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '400px' }}>
+                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '500px' }}>
                               <button onClick={() => router.push(`/dashboard/candidate-portal/enquiries/view/${item.unique_id}`)} className="xui-btn xui-btn-small xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-font-sz-80" style={{ backgroundColor: 'var(--info-light)', border: 'none', color: 'var(--info)' }}><View size={16} /> View</button>
-                              {item.enquiry_status !== 'completed' && canEdit && (
+                              {item.enquiry_status?.toLowerCase() !== 'completed' && canEdit && (
                                 <button onClick={() => { setSelectedItem(item); modalShow('complete-modal'); }} className="xui-btn xui-btn-small xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-font-sz-80" style={{ backgroundColor: 'var(--success-light)', border: 'none', color: 'var(--success)' }}><Checkmark size={16} /> Complete</button>
                               )}
                               {canDelete && (

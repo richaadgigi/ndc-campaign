@@ -7,6 +7,7 @@ import { ArrowLeft, Checkmark } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import categoriesService from '../../services/categories.service';
 import type { Category } from '../../services/categories.service';
+import candidatesService from '../../services/candidates.service';
 import { Alert, showAlert } from '../../components/common';
 import { ConfirmModal } from '../../components/modals';
 import { modalShow } from '@richaadgigi/stylexui';
@@ -35,7 +36,10 @@ const EditCategory = () => {
     const fetchItem = async () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       try {
-        const res = await categoriesService.getCategory(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const profileRes = await candidatesService.getProfile({ module_unique_id: moduleId });
+        if (!profileRes.success || !profileRes.data) { setLoadingItem(false); return; }
+        const cId = profileRes.data.unique_id;
+        const res = await categoriesService.getCategory(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId, candidate_unique_id: cId } as any);
         if (res.success && res.data) { setItem(res.data); reset({ name: res.data.name }); }
       } catch { setError('Failed to load category details'); showAlert('error-alert'); } finally { setLoadingItem(false); }
     };

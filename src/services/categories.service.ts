@@ -1,4 +1,4 @@
-import api from './api';
+﻿import api from './api';
 
 export interface Category {
   unique_id: string;
@@ -63,25 +63,25 @@ const categoriesService = {
   },
   getCategories: async (params: PaginationParams): Promise<CategoriesResponse> => {
     const query = buildQueryParams(params);
-    const response = await api.get(`/user/categories?${query}`);
+    const response = await api.get(`/portal/categories?${query}`);
     return response.data;
   },
 
   getCategory: async (unique_id: string, params: { module_unique_id: string; sub_module_unique_id?: string }): Promise<CategoryResponse> => {
     const query = buildQueryParams({ unique_id, ...params });
-    const response = await api.get(`/user/category?${query}`);
+    const response = await api.get(`/portal/category?${query}`);
     return response.data;
   },
 
   searchCategories: async (params: SearchParams): Promise<CategoriesResponse> => {
     const query = buildQueryParams(params);
-    const response = await api.get(`/user/search/categories?${query}`);
+    const response = await api.get(`/portal/search/categories?${query}`);
     return response.data;
   },
 
   filterCategories: async (params: FilterParams): Promise<CategoriesResponse> => {
     const query = buildQueryParams(params);
-    const response = await api.get(`/user/filter/categories?${query}`);
+    const response = await api.get(`/portal/filter/categories?${query}`);
     return response.data;
   },
 
@@ -90,7 +90,7 @@ const categoriesService = {
     params: { module_unique_id: string; sub_module_unique_id?: string }
   ): Promise<{ success: boolean; message: string }> => {
     const query = buildQueryParams(params);
-    const response = await api.post(`/user/category/add?${query}`, data);
+    const response = await api.post(`/portal/category/add?${query}`, data);
     return response.data;
   },
 
@@ -99,7 +99,7 @@ const categoriesService = {
     params: { module_unique_id: string; sub_module_unique_id?: string }
   ): Promise<{ success: boolean; message: string }> => {
     const query = buildQueryParams(params);
-    const response = await api.put(`/user/category/edit/details?${query}`, data);
+    const response = await api.put(`/portal/category/edit/details?${query}`, data);
     return response.data;
   },
 
@@ -108,7 +108,7 @@ const categoriesService = {
     params: { module_unique_id: string; sub_module_unique_id?: string }
   ): Promise<{ success: boolean; message: string }> => {
     const query = buildQueryParams(params);
-    const response = await api.put(`/user/approve/category?${query}`, data);
+    const response = await api.put(`/portal/approve/category?${query}`, data);
     return response.data;
   },
 
@@ -117,7 +117,7 @@ const categoriesService = {
     params: { module_unique_id: string; sub_module_unique_id?: string }
   ): Promise<{ success: boolean; message: string }> => {
     const query = buildQueryParams(params);
-    const response = await api.delete(`/user/category?${query}`, { data: { unique_id } });
+    const response = await api.delete(`/portal/category?${query}`, { data: { unique_id } });
     return response.data;
   },
 };

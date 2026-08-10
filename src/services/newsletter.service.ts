@@ -1,9 +1,9 @@
-import api from './api';
+﻿import api from './api';
 
 export interface Newsletter {
   unique_id: string;
   email: string;
-  active_subscription: boolean;
+  subscription: boolean;
   status: number;
   createdAt: string;
   updatedAt: string;
@@ -13,6 +13,16 @@ export interface NewsletterResponse {
   success: boolean;
   message: string;
   data: { count: number; rows: Newsletter[]; pages: number } | Newsletter[] | null;
+}
+
+export interface NewsletterStats {
+  total_newsletters: number;
+}
+
+export interface NewsletterStatsResponse {
+  success: boolean;
+  message: string;
+  data: NewsletterStats | null;
 }
 
 interface PaginationParams { page?: number; size?: number; orderBy?: string; sortBy?: 'ASC' | 'DESC'; module_unique_id: string; sub_module_unique_id?: string; }
@@ -25,18 +35,28 @@ const buildQueryParams = (params: Record<string, any>): string => {
 };
 
 const newsletterService = {
+  getStats: async (params: Omit<PaginationParams, 'page' | 'size'>): Promise<NewsletterStatsResponse> => {
+    const response = await api.get(`/user/newsletter/stats?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
+  portalGetStats: async (params: Omit<PaginationParams, 'page' | 'size'>): Promise<NewsletterStatsResponse> => {
+    const response = await api.get(`/portal/newsletter/stats?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
   getAll: async (params: PaginationParams): Promise<NewsletterResponse> => {
-    const response = await api.get(`/user/newsletter?${buildQueryParams(params)}`);
+    const response = await api.get(`/portal/newsletter?${buildQueryParams(params)}`);
     return response.data;
   },
 
   filter: async (params: FilterParams): Promise<NewsletterResponse> => {
-    const response = await api.get(`/user/filter/newsletter?${buildQueryParams(params)}`);
+    const response = await api.get(`/portal/filter/newsletter?${buildQueryParams(params)}`);
     return response.data;
   },
 
   remove: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<{ success: boolean; message: string }> => {
-    const response = await api.delete(`/user/newsletter?${buildQueryParams(params)}`, { data: { unique_id } });
+    const response = await api.delete(`/portal/newsletter?${buildQueryParams(params)}`, { data: { unique_id } });
     return response.data;
   },
 };

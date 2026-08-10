@@ -160,7 +160,7 @@ const AllMembers = () => {
                       <td>
                         <div className="xui-tooltip" xui-set="left">
                           <span className="xui-cursor-pointer xui-d-inline-flex"><OverflowMenuVertical size={20} /></span>
-                          <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex' }}>
+                          <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '500px' }}>
                             <button onClick={() => router.push(`/dashboard/candidate-portal/members/edit/${member.unique_id}`)} className="xui-btn xui-btn-small xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-font-sz-80" style={{ backgroundColor: 'var(--neutral-100)', border: 'none', color: 'var(--neutral-700)' }}>
                               <View size={16} /> View
                             </button>

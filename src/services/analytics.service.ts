@@ -88,10 +88,15 @@ export interface CandidatePortalStats {
   total_events: number;
   total_faqs: number;
   total_file_storage: number;
-  total_gallery: number;
+  total_galleries: number;
   total_manifestos: number;
-  total_newsletter: number;
+  total_members: number;
+  total_newsletters: number;
   total_posts: number;
+  announcement_views_sum: number;
+  post_views_sum: number;
+  post_minutes_read_sum: number;
+  event_views_sum: number;
 }
 
 export interface CandidatePortalStatsResponse {
@@ -151,7 +156,7 @@ export const analyticsService = {
 
   getCandidatePortalStats: async (params: ModuleParams): Promise<CandidatePortalStatsResponse> => {
     const query = buildQueryParams(params);
-    const response = await api.get(`/user/candidate/portal/stats?${query}`);
+    const response = await api.get(`/portal/candidate/portal/stats?${query}`);
     return response.data;
   },
 };

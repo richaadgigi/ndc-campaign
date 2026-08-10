@@ -1,11 +1,13 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { Navbar } from '../../components/layout';
-import { Renew, TrashCan, OverflowMenuVertical } from '@carbon/icons-react';
+import { Renew, TrashCan, OverflowMenuVertical, Email } from '@carbon/icons-react';
 import { extractErrorMessage } from '../../utils/formatters';
 import { useGeneral } from '../../context/GeneralContext';
 import newsletterService from '../../services/newsletter.service';
 import type { Newsletter } from '../../services/newsletter.service';
+import type { NewsletterStats } from '../../services/newsletter.service';
+import { MetricCard } from '../../components/overview';
 import { Alert, showAlert, Pagination, EmptyState, ErrorState, FilterModal } from '../../components/common';
 import type { FilterField, FilterValues } from '../../components/common';
 import { ConfirmModal } from '../../components/modals';
@@ -16,6 +18,7 @@ const AllNewsletter = () => {
   const { getAccessIds, checkAccess } = useGeneral();
   const [filterValues, setFilterValues] = useState<FilterValues>({ start_date: '', end_date: '' });
   const [items, setItems] = useState<Newsletter[]>([]);
+  const [statsData, setStatsData] = useState<NewsletterStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [actionError, setActionError] = useState('');
@@ -85,6 +88,19 @@ const AllNewsletter = () => {
   const handleRefresh = () => { setFilterValues({ start_date: '', end_date: '' }); setCurrentPage(1); fetchItems(); };
 
   useEffect(() => {
+
+    if (!moduleId || !subModuleId) return;
+
+    newsletterService.portalGetStats({ module_unique_id: moduleId, sub_module_unique_id: subModuleId })
+
+      .then(res => { if (res.success && res.data) setStatsData(res.data); })
+
+      .catch(err => console.error('Failed to load stats:', err));
+
+  }, [moduleId, subModuleId]);
+
+
+  useEffect(() => {
     if (!moduleId || !subModuleId) return;
     if (!hasActiveFilters) fetchItems();
   }, [moduleId, subModuleId, currentPage, fetchItems]);
@@ -93,6 +109,11 @@ const AllNewsletter = () => {
     <div>
       <Navbar title="Newsletter" subtitle="Manage newsletter subscribers" />
       <div className="xui-py-1-half">
+        {statsData && (
+          <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-3 xui-grid-gap-1 xui-mb-1-half">
+            <MetricCard title="Total Subscribers" value={statsData.total_newsletters ?? 0} icon={<Email size={24} />} iconBgColor="var(--info-light)" iconColor="var(--info)" />
+          </div>
+        )}
         <div className="xui-d-flex xui-flex-ai-center xui-flex-jc-space-between xui-mb-1-half">
           <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-1">
             <FilterModal id="newsletter" fields={filterFields} values={filterValues} onApply={handleApplyFilters} onClear={handleClearFilters} />
@@ -127,8 +148,8 @@ const AllNewsletter = () => {
                     <tr key={item.unique_id}>
                       <td className="xui-font-w-500">{item.email}</td>
                       <td>
-                        <span className={`xui-badge ${item.active_subscription ? 'xui-badge-success' : 'xui-badge-danger'} xui-font-sz-70`}>
-                          {item.active_subscription ? 'Subscribed' : 'Unsubscribed'}
+                        <span className={`xui-badge ${item.subscription ? 'xui-badge-success' : 'xui-badge-danger'} xui-font-sz-70`}>
+                          {item.subscription ? 'Subscribed' : 'Unsubscribed'}
                         </span>
                       </td>
                       <td className="xui-font-sz-85 xui-opacity-6">{new Date(item.createdAt).toLocaleDateString()}</td>
@@ -136,7 +157,7 @@ const AllNewsletter = () => {
                         <td>
                           <div className="xui-tooltip" xui-set="left">
                             <span className="xui-cursor-pointer xui-d-inline-flex"><OverflowMenuVertical size={20} /></span>
-                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex' }}>
+                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '500px' }}>
                               <button onClick={() => { setSelectedItem(item); modalShow('delete-modal'); }} className="xui-btn xui-btn-small xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-font-sz-80" style={{ backgroundColor: 'var(--error-light)', border: 'none', color: 'var(--error)' }}><TrashCan size={16} /> Delete</button>
                             </div>
                           </div>

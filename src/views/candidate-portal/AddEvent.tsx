@@ -28,22 +28,24 @@ const AddEvent = () => {
   const [image, setImage] = useState('');
   const [imagePublicId, setImagePublicId] = useState('');
   const [description, setDescription] = useState('');
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [candidateProfile, setCandidateProfile] = useState<Candidate | null>(null);
 
   const accessIds = getAccessIds('candidate-portal', 'events');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    defaultValues: { candidate_unique_id: '', title: '', alt_text: '', type: '', start_date: searchParams.get('date') || '', start_time: '', end_date: '', end_time: '', location: '', link: '' }
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({
+    defaultValues: { candidate_unique_id: '', title: '', alt_text: '', type: '', start_date: searchParams?.get('date') || '', start_time: '', end_date: '', end_time: '', location: '', link: '' }
   });
 
   useEffect(() => {
-    candidatesService.publicGetAll({ size: 200 }).then(res => {
-      if (res.success && res.data) setCandidates(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
+    if (!accessIds) return;
+    candidatesService.getProfile({ module_unique_id: accessIds.module_unique_id }).then(res => {
+      if (res.success && res.data) { setCandidateProfile(res.data); setValue('candidate_unique_id', res.data.unique_id); }
     }).catch(() => {});
-  }, []);
+  }, [accessIds?.module_unique_id]);
 
   const onSubmit = async (data: FormData) => {
     if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
+    if (!candidateProfile) { setError('Candidate profile not loaded'); showAlert('error-alert'); return; }
     if (!description || description === '<p><br></p>') { setError('Description is required'); showAlert('error-alert'); return; }
     setLoading(true);
     const cleanDescription = sanitizeHTML(description);
@@ -81,13 +83,10 @@ const AddEvent = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
           <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-grid-gap-2">
             <div>
-              <div className="xui-form-box" {...(errors.candidate_unique_id && { 'xui-error': 'true' })}>
-                <label htmlFor="candidate_unique_id">Candidate *</label>
-                <select id="candidate_unique_id" {...register('candidate_unique_id', { required: 'Candidate is required' })}>
-                  <option value="">Select a candidate</option>
-                  {candidates.map(c => <option key={c.unique_id} value={c.unique_id}>{c.name}{(c as any).Position?.name ? ` (${(c as any).Position.name})` : c.state ? ` - ${c.state}` : ''}</option>)}
-                </select>
-                {errors.candidate_unique_id && <span className="message">{errors.candidate_unique_id.message}</span>}
+              <div className="xui-form-box">
+                <label>Candidate</label>
+                <input type="text" value={candidateProfile?.name || ''} readOnly style={{ backgroundColor: 'var(--neutral-50)', cursor: 'default' }} />
+                <input type="hidden" {...register('candidate_unique_id')} />
               </div>
               <div className="xui-form-box" {...(errors.title && { 'xui-error': 'true' })}>
                 <label htmlFor="title">Title *</label>

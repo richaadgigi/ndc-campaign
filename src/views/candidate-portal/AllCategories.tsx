@@ -29,8 +29,7 @@ const AllCategories = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [selectedItem, setSelectedItem] = useState<Category | null>(null);
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [selectedCandidateId, setSelectedCandidateId] = useState('');
+  const [candidateProfile, setCandidateProfile] = useState<Candidate | null>(null);
 
   const accessIds = getAccessIds('candidate-portal', 'categories');
   const moduleId = accessIds?.module_unique_id;
@@ -43,14 +42,12 @@ const AllCategories = () => {
 
   useEffect(() => {
     if (!moduleId) return;
-    candidatesService.publicGetAll({ size: 200, module_unique_id: moduleId }).then(res => {
-      if (res.success && res.data) {
-        const list = Array.isArray(res.data) ? res.data : (res.data as any).rows || [];
-        setCandidates(list);
-        if (list.length > 0) setSelectedCandidateId(list[0].unique_id);
-      }
+    candidatesService.getProfile({ module_unique_id: moduleId }).then(res => {
+      if (res.success && res.data) setCandidateProfile(res.data);
     }).catch(() => {});
   }, [moduleId]);
+
+  const candidateId = candidateProfile?.unique_id;
 
   const handleResponse = (response: any) => {
     if (response.success && response.data) {
@@ -70,29 +67,29 @@ const AllCategories = () => {
     if (!moduleId || !subModuleId) { setFetchError('You do not have access to this module'); setLoading(false); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await categoriesService.getCategories({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(selectedCandidateId && { candidate_unique_id: selectedCandidateId }) });
+      const response = await categoriesService.getCategories({ page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(candidateId && { candidate_unique_id: candidateId }) });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to fetch categories')); } finally { setLoading(false); }
-  }, [moduleId, subModuleId, currentPage, pageSize, selectedCandidateId]);
+  }, [moduleId, subModuleId, currentPage, pageSize, candidateId]);
 
   const searchItems = useCallback(async (query: string) => {
     if (!moduleId || !subModuleId) return;
     if (!query.trim()) { fetchItems(); return; }
     setLoading(true); setFetchError('');
     try {
-      const response = await categoriesService.searchCategories({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(selectedCandidateId && { candidate_unique_id: selectedCandidateId }) });
+      const response = await categoriesService.searchCategories({ search: query, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(candidateId && { candidate_unique_id: candidateId }) });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to search categories')); } finally { setLoading(false); }
-  }, [moduleId, subModuleId, currentPage, pageSize, selectedCandidateId, fetchItems]);
+  }, [moduleId, subModuleId, currentPage, pageSize, candidateId, fetchItems]);
 
   const filterItems = useCallback(async (range: { start_date: string; end_date: string }) => {
     if (!moduleId || !subModuleId) return;
     setLoading(true); setFetchError('');
     try {
-      const response = await categoriesService.filterCategories({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(selectedCandidateId && { candidate_unique_id: selectedCandidateId }) });
+      const response = await categoriesService.filterCategories({ start_date: range.start_date, end_date: range.end_date, page: currentPage, size: pageSize, module_unique_id: moduleId, sub_module_unique_id: subModuleId, ...(candidateId && { candidate_unique_id: candidateId }) });
       handleResponse(response);
     } catch (err: any) { setFetchError(extractErrorMessage(err, 'Failed to filter categories')); } finally { setLoading(false); }
-  }, [moduleId, subModuleId, currentPage, pageSize, selectedCandidateId]);
+  }, [moduleId, subModuleId, currentPage, pageSize, candidateId]);
 
   const handleDeleteItem = async () => {
     if (!moduleId || !subModuleId || !selectedItem) return { success: false, message: 'Unable to delete category' };
@@ -130,38 +127,6 @@ const AllCategories = () => {
     <div>
       <Navbar title="Categories" subtitle="Manage media categories" />
       <div className="xui-py-1-half">
-        {candidates.length > 0 && (
-          <div className="xui-mb-1-half">
-            <p className="xui-font-sz-75 xui-font-w-600 xui-opacity-5 xui-mb-half" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Candidate</p>
-            <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-half" style={{ flexWrap: 'wrap' }}>
-              {candidates.map(c => {
-                const active = selectedCandidateId === c.unique_id;
-                const label = `${c.name}${(c as any).Position?.name ? ` · ${(c as any).Position.name}` : c.state ? ` · ${c.state}` : ''}`;
-                return (
-                  <button
-                    key={c.unique_id}
-                    type="button"
-                    onClick={() => { setSelectedCandidateId(c.unique_id); setCurrentPage(1); }}
-                    style={{
-                      padding: '6px 16px',
-                      borderRadius: '20px',
-                      fontSize: '13px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                      border: active ? 'none' : '1px solid var(--neutral-300)',
-                      backgroundColor: active ? 'var(--primary-600)' : 'white',
-                      color: active ? 'var(--secondary-700)' : 'var(--neutral-600)',
-                      boxShadow: active ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
-                    }}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
         <div className="xui-d-flex xui-flex-ai-center xui-flex-jc-space-between xui-mb-1-half">
           <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-1">
             <SearchInput placeholder="Search categories..." value={searchQuery} onChange={handleSearchChange} onSearch={handleSearch} width="300px" />
@@ -246,7 +211,7 @@ const AllCategories = () => {
                         <td>
                           <div className="xui-tooltip" xui-set="left">
                             <span className="xui-cursor-pointer xui-d-inline-flex"><OverflowMenuVertical size={20} /></span>
-                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '400px' }}>
+                            <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '500px' }}>
                               {canEdit && item.approved_by === null && (
                                 <button onClick={() => { setSelectedItem(item); modalShow('approve-modal'); }} className="xui-btn xui-btn-small xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-font-sz-80" style={{ backgroundColor: 'var(--success-light)', border: 'none', color: 'var(--success)' }}><Checkmark size={16} /> Approve</button>
                               )}

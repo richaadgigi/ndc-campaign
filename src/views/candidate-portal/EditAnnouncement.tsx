@@ -8,6 +8,7 @@ import { ArrowLeft, Checkmark } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import announcementsService from '../../services/announcements.service';
 import type { Announcement } from '../../services/announcements.service';
+import candidatesService from '../../services/candidates.service';
 import { Alert, showAlert } from '../../components/common';
 import { ConfirmModal } from '../../components/modals';
 import { modalShow } from '@richaadgigi/stylexui';
@@ -27,6 +28,7 @@ const EditAnnouncement = () => {
   const [item, setItem] = useState<Announcement | null>(null);
   const [description, setDescription] = useState('');
   const [editorReady, setEditorReady] = useState(false);
+  const [candidateId, setCandidateId] = useState('');
 
   const accessIds = getAccessIds('candidate-portal', 'announcements');
   const moduleId = accessIds?.module_unique_id;
@@ -39,7 +41,11 @@ const EditAnnouncement = () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       const parseDate = (d: string | null) => d ? d.split('T')[0].split(' ')[0] : '';
       try {
-        const res = await announcementsService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const profileRes = await candidatesService.getProfile({ module_unique_id: moduleId });
+        if (!profileRes.success || !profileRes.data) { setLoadingItem(false); return; }
+        const cId = profileRes.data.unique_id;
+        setCandidateId(cId);
+        const res = await announcementsService.getOne(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId, candidate_unique_id: cId } as any);
         if (res.success && res.data) {
           setItem(res.data);
           reset({ title: res.data.title, start_date: parseDate(res.data.start_date), end_date: parseDate(res.data.end_date) });

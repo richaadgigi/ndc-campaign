@@ -1,5 +1,5 @@
 'use client';
-import { Trophy, Person, UserMultiple, Report, UserAdmin } from '@carbon/icons-react';
+import { Catalog, Document, GroupPresentation, Person } from '@carbon/icons-react';
 import { useRouter } from 'next/navigation';
 
 interface QuickAction {
@@ -15,39 +15,32 @@ const QuickActions = () => {
 
   const actions: QuickAction[] = [
     {
-      label: 'Add Position',
-      icon: <Trophy size={20} />,
+      label: 'Candidate Profile',
+      icon: <Person size={20} />,
       bgColor: 'var(--primary-100)',
       iconColor: 'var(--primary-700)',
-      path: '/dashboard/campaign/positions/add',
+      path: '/dashboard/candidate-portal/candidate-profile',
     },
     {
-      label: 'Add Candidate',
-      icon: <Person size={20} />,
+      label: 'Announcements',
+      icon: <Catalog size={20} />,
       bgColor: 'var(--info-light)',
       iconColor: 'var(--info)',
-      path: '/dashboard/campaign/candidates/add',
+      path: '/dashboard/candidate-portal/announcements',
     },
     {
-      label: 'Add Member',
-      icon: <UserMultiple size={20} />,
+      label: 'Posts',
+      icon: <Document size={20} />,
       bgColor: 'var(--success-light)',
       iconColor: 'var(--success)',
-      path: '/dashboard/campaign/members/add',
+      path: '/dashboard/candidate-portal/posts',
     },
     {
-      label: 'Manage Users',
-      icon: <UserAdmin size={20} />,
+      label: 'Members',
+      icon: <GroupPresentation size={20} />,
       bgColor: 'var(--warning-light)',
       iconColor: 'var(--warning)',
-      path: '/dashboard/admin/users',
-    },
-    {
-      label: 'Roles Overview',
-      icon: <Report size={20} />,
-      bgColor: 'var(--neutral-200)',
-      iconColor: 'var(--neutral-700)',
-      path: '/dashboard/roles/overview',
+      path: '/dashboard/candidate-portal/members',
     },
   ];
 
@@ -57,7 +50,7 @@ const QuickActions = () => {
         <h3 className="xui-font-sz-90 xui-font-w-600" style={{ color: 'var(--neutral-900)' }}>Quick Actions</h3>
       </div>
       <div className="xui-p-1">
-        <div className="xui-d-grid xui-grid-col-2 xui-lg-grid-col-5 xui-grid-gap-1">
+        <div className="xui-d-grid xui-grid-col-2 xui-lg-grid-col-4 xui-grid-gap-1">
           {actions.map((action) => (
             <button
               key={action.label}

@@ -158,7 +158,7 @@ const AllFileStorage = () => {
                       <td>
                         <div className="xui-tooltip" xui-set="left">
                           <span className="xui-cursor-pointer xui-d-inline-flex"><OverflowMenuVertical size={20} /></span>
-                          <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex' }}>
+                          <div className="xui-tooltip-content xui-flex-ai-center xui-grid-gap-half" style={{ display: 'flex', maxWidth: '500px' }}>
                             {item.file && (
                               <button onClick={() => { navigator.clipboard.writeText(item.file); setSuccessMessage('File link copied to clipboard!'); showAlert('success-alert'); }} className="xui-btn xui-btn-small xui-d-flex xui-flex-ai-center xui-grid-gap-half xui-cursor-pointer xui-font-sz-80" style={{ backgroundColor: 'var(--primary-100)', border: 'none', color: 'var(--primary-700)' }}><Copy size={16} /> Copy Link</button>
                             )}

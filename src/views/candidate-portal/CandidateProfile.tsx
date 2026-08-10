@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Navbar } from '../../components/layout';
-import { Edit, Renew } from '@carbon/icons-react';
+import { Renew } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import candidatesService from '../../services/candidates.service';
 import type { Candidate } from '../../services/candidates.service';
@@ -26,7 +26,7 @@ const cardStyle = { border: '1px solid var(--neutral-200)', borderRadius: '8px',
 const CandidateProfile = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { getAccessIds, checkAccess } = useGeneral();
+  const { getAccessIds } = useGeneral();
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [candidate, setCandidate] = useState<Candidate | null>(null);
@@ -38,9 +38,6 @@ const CandidateProfile = () => {
   const accessIds = getAccessIds('candidate-portal', 'candidate-profile');
   const moduleId = accessIds?.module_unique_id;
   const subModuleId = accessIds?.sub_module_unique_id;
-
-  const accessResult = moduleId ? checkAccess(moduleId, subModuleId) : { hasAccess: false, accessTypes: [] };
-  const canEdit = accessResult.accessTypes.includes('edit');
 
   const fetchPortalProfile = async () => {
     if (!moduleId || !subModuleId) return false;
@@ -179,16 +176,6 @@ const CandidateProfile = () => {
                   {candidate.Position?.name && <p className="xui-font-sz-80 xui-opacity-5" style={{ margin: '4px 0 0' }}>{candidate.Position.name}</p>}
                 </div>
               </div>
-              {canEdit && (
-                <button
-                  onClick={() => router.push(`/dashboard/campaign/candidates/edit/${candidate.unique_id}`)}
-                  className="xui-btn xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-flex xui-flex-ai-center xui-grid-gap-half"
-                  style={{ backgroundColor: 'var(--info-light)', border: 'none', color: 'var(--info)' }}
-                >
-                  <span className="icon-container"><Edit size={16} /></span>
-                  Edit Profile
-                </button>
-              )}
             </div>
 
             <hr style={{ borderColor: 'var(--neutral-200)', marginBottom: '20px' }} />

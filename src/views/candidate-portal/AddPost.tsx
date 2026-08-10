@@ -14,7 +14,7 @@ import type { Category } from '../../services/categories.service';
 import { Alert, showAlert, ImageUpload } from '../../components/common';
 import { extractErrorMessage, sanitizeHTML } from '../../utils/formatters';
 
-interface FormData { candidate_unique_id: string; title: string; alt_text: string; caption: string; category_unique_id: string; tags: string[]; }
+interface FormData { candidate_unique_id: string; title: string; alt_text: string; category_unique_id: string; tags: string[]; }
 
 const AddPost = () => {
   const router = useRouter();
@@ -22,7 +22,7 @@ const AddPost = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [candidateProfile, setCandidateProfile] = useState<Candidate | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [image, setImage] = useState('');
   const [imagePublicId, setImagePublicId] = useState('');
@@ -31,36 +31,27 @@ const AddPost = () => {
 
   const accessIds = getAccessIds('candidate-portal', 'posts');
 
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormData>({ defaultValues: { candidate_unique_id: '', title: '', alt_text: '', caption: '', category_unique_id: '', tags: [] } });
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormData>({ defaultValues: { candidate_unique_id: '', title: '', alt_text: '', category_unique_id: '', tags: [] } });
   const tags = watch('tags');
-  const selectedCandidateId = watch('candidate_unique_id');
 
   useEffect(() => {
     if (!accessIds) return;
-    const fetchCandidates = async () => {
-      try {
-        const res = await candidatesService.publicGetAll({ size: 200, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id });
-        if (res.success && res.data) setCandidates(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
-      } catch {}
-    };
-    fetchCandidates();
+    candidatesService.getProfile({ module_unique_id: accessIds.module_unique_id }).then(res => {
+      if (res.success && res.data) { setCandidateProfile(res.data); setValue('candidate_unique_id', res.data.unique_id); }
+    }).catch(() => {});
   }, [accessIds?.module_unique_id]);
 
   useEffect(() => {
-    if (!accessIds || !selectedCandidateId) { setCategories([]); return; }
-    const fetchCategories = async () => {
-      try {
-        const res = await categoriesService.getCategories({ size: 200, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id, candidate_unique_id: selectedCandidateId });
-        if (res.success && res.data) setCategories(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
-        else setCategories([]);
-      } catch { setCategories([]); }
-    };
-    setValue('category_unique_id', '');
-    fetchCategories();
-  }, [selectedCandidateId, accessIds?.module_unique_id]);
+    if (!accessIds || !candidateProfile) { setCategories([]); return; }
+    categoriesService.getCategories({ size: 200, module_unique_id: accessIds.module_unique_id, sub_module_unique_id: accessIds.sub_module_unique_id, candidate_unique_id: candidateProfile.unique_id }).then(res => {
+      if (res.success && res.data) setCategories(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
+      else setCategories([]);
+    }).catch(() => { setCategories([]); });
+  }, [candidateProfile?.unique_id, accessIds?.module_unique_id]);
 
   const onSubmit = async (data: FormData) => {
     if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
+    if (!candidateProfile) { setError('Candidate profile not loaded'); showAlert('error-alert'); return; }
     if (!description || description === '<p><br></p>') { setError('Description is required'); showAlert('error-alert'); return; }
     setLoading(true);
     const cleanDescription = sanitizeHTML(description);
@@ -71,7 +62,6 @@ const AddPost = () => {
           candidate_unique_id: data.candidate_unique_id,
           title: data.title,
           ...(data.alt_text && { alt_text: data.alt_text }),
-          ...(data.caption && { caption: data.caption }),
           description: cleanDescription,
           ...(data.category_unique_id && { category_unique_id: data.category_unique_id }),
           ...(image && { image, image_public_id: imagePublicId }),
@@ -99,13 +89,10 @@ const AddPost = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
           <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-grid-gap-2">
             <div>
-              <div className="xui-form-box" {...(errors.candidate_unique_id && { 'xui-error': 'true' })}>
-                <label htmlFor="candidate_unique_id">Candidate *</label>
-                <select id="candidate_unique_id" {...register('candidate_unique_id', { required: 'Candidate is required' })}>
-                  <option value="">--Select candidate--</option>
-                  {candidates.map(c => <option key={c.unique_id} value={c.unique_id}>{c.name}{(c as any).Position?.name ? ` (${(c as any).Position.name})` : c.state ? ` - ${c.state}` : ''}</option>)}
-                </select>
-                {errors.candidate_unique_id && <span className="message">{errors.candidate_unique_id.message}</span>}
+              <div className="xui-form-box">
+                <label>Candidate</label>
+                <input type="text" value={candidateProfile?.name || ''} readOnly style={{ backgroundColor: 'var(--neutral-50)', cursor: 'default' }} />
+                <input type="hidden" {...register('candidate_unique_id')} />
               </div>
               <div className="xui-form-box" {...(errors.title && { 'xui-error': 'true' })}>
                 <label htmlFor="title">Title *</label>
@@ -115,10 +102,6 @@ const AddPost = () => {
               <div className="xui-form-box">
                 <label htmlFor="alt_text">Alt Text (SEO)</label>
                 <input type="text" id="alt_text" placeholder="Enter alt text for SEO" {...register('alt_text')} />
-              </div>
-              <div className="xui-form-box">
-                <label htmlFor="caption">Caption</label>
-                <input type="text" id="caption" placeholder="Enter image caption" {...register('caption')} />
               </div>
               <div className="xui-form-box">
                 <label htmlFor="category_unique_id" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>Category <a href="/dashboard/candidate-portal/categories/add" target="_blank" rel="noopener noreferrer" style={{ fontSize: '11px', color: 'var(--primary-600)', fontWeight: 500, backgroundColor: 'var(--primary-100)', padding: '2px 10px', borderRadius: '20px', textDecoration: 'none' }}>+ Add new</a></label>

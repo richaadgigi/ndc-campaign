@@ -44,10 +44,9 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await authService.login({
-        email: data.email,
+      const response = await authService.portalSignIn({
+        login_id: data.email,
         password: data.password,
-        remember_me: data.remember_me,
       });
 
       if (response.success && response.data) {
@@ -87,10 +86,9 @@ const Login = () => {
 
     setVerifyingOtp(true);
     try {
-      const response = await authService.verifyOtp({
-        email: otpEmail,
+      const response = await authService.portalVerifyOtp({
+        login_id: otpEmail,
         otp,
-        remember_me: rememberMe,
       });
 
       if (response.success && response.data) {

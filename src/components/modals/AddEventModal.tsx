@@ -6,7 +6,6 @@ import { Close } from '@carbon/icons-react';
 import { modalHide } from '@richaadgigi/stylexui';
 import eventsService from '../../services/events.service';
 import candidatesService from '../../services/candidates.service';
-import type { Candidate } from '../../services/candidates.service';
 import { showAlert } from '../common';
 import { extractErrorMessage, sanitizeHTML } from '../../utils/formatters';
 
@@ -40,12 +39,14 @@ const MODAL_ID = 'add-event-modal';
 const AddEventModal = ({ date, accessIds, onSuccess, setError, setSuccessMessage }: AddEventModalProps) => {
   const [saving, setSaving] = useState(false);
   const [description, setDescription] = useState('');
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [candidateName, setCandidateName] = useState('');
+  const [candidateId, setCandidateId] = useState('');
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<AddEventFormData>({
     defaultValues: {
@@ -56,26 +57,29 @@ const AddEventModal = ({ date, accessIds, onSuccess, setError, setSuccessMessage
   });
 
   useEffect(() => {
-    candidatesService.publicGetAll({ size: 200 }).then(res => {
+    if (!accessIds) return;
+    candidatesService.getProfile({ module_unique_id: accessIds.module_unique_id }).then(res => {
       if (res.success && res.data) {
-        setCandidates(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
+        setCandidateName(res.data.name);
+        setCandidateId(res.data.unique_id);
+        setValue('candidate_unique_id', res.data.unique_id);
       }
     }).catch(() => {});
-  }, []);
+  }, [accessIds, setValue]);
 
   useEffect(() => {
     if (date) {
       reset({
-        candidate_unique_id: '', title: '', alt_text: '', type: 'Physical',
+        candidate_unique_id: candidateId, title: '', alt_text: '', type: 'Physical',
         start_date: date, start_time: '09:00', end_date: '', end_time: '',
         location: '', link: '',
       });
       setDescription('');
     }
-  }, [date, reset]);
+  }, [date, reset, candidateId]);
 
   const closeModal = () => {
-    reset();
+    reset({ candidate_unique_id: candidateId, title: '', alt_text: '', type: 'Physical', start_date: date, start_time: '09:00', end_date: '', end_time: '', location: '', link: '' });
     setDescription('');
     modalHide(MODAL_ID);
   };
@@ -124,7 +128,7 @@ const AddEventModal = ({ date, accessIds, onSuccess, setError, setSuccessMessage
       if (res.success) {
         setSuccessMessage('Event created successfully');
         showAlert('success-alert');
-        reset();
+        reset({ candidate_unique_id: candidateId, title: '', alt_text: '', type: 'Physical', start_date: date, start_time: '09:00', end_date: '', end_time: '', location: '', link: '' });
         setDescription('');
         modalHide(MODAL_ID);
         onSuccess();
@@ -154,17 +158,10 @@ const AddEventModal = ({ date, accessIds, onSuccess, setError, setSuccessMessage
         </div>
         <hr className="xui-my-1" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form">
-          <div className="xui-form-box" {...(errors.candidate_unique_id && { 'xui-error': 'true' })}>
-            <label htmlFor="event_candidate">Candidate *</label>
-            <select id="event_candidate" {...register('candidate_unique_id', { required: 'Candidate is required' })}>
-              <option value="">Select a candidate</option>
-              {candidates.map(c => (
-                <option key={c.unique_id} value={c.unique_id}>
-                  {c.name}{(c as any).Position?.name ? ` (${(c as any).Position.name})` : c.state ? ` - ${c.state}` : ''}
-                </option>
-              ))}
-            </select>
-            {errors.candidate_unique_id && <span className="message">{errors.candidate_unique_id.message}</span>}
+          <div className="xui-form-box">
+            <label>Candidate</label>
+            <input type="text" value={candidateName} readOnly disabled />
+            <input type="hidden" {...register('candidate_unique_id')} />
           </div>
 
           <div className="xui-d-grid xui-grid-col-2 xui-grid-gap-1">

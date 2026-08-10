@@ -4,6 +4,8 @@ import { Navbar } from '../../components/layout';
 import { MetricCard } from '../../components/overview';
 import { Bullhorn, Category, Email, Calendar, Catalog, DocumentSet, Image, Book, LetterAa, Edit } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
+import { EmptyState, ErrorState } from '../../components/common';
+import { OverviewSkeleton } from '../../components/skeletons';
 import analyticsService from '../../services/analytics.service';
 import type { CandidatePortalStats } from '../../services/analytics.service';
 
@@ -32,14 +34,12 @@ const CandidatePortalOverview = () => {
       <Navbar title="Candidate Portal Overview" subtitle="Candidate portal statistics at a glance" />
       <div className="xui-py-1-half">
         {loading ? (
-          <div className="xui-d-flex xui-flex-ai-center xui-flex-jc-center" style={{ minHeight: '200px', color: 'var(--neutral-400)', fontSize: '14px' }}>
-            Loading stats...
-          </div>
+          <OverviewSkeleton />
         ) : error ? (
-          <div className="xui-d-flex xui-flex-ai-center xui-flex-jc-center" style={{ minHeight: '200px', color: 'var(--error)', fontSize: '14px' }}>
-            {error}
-          </div>
-        ) : stats ? (
+          <ErrorState title="Failed to load candidate portal stats" message={error} />
+        ) : !stats ? (
+          <EmptyState title="No stats available" message="There are no statistics to display yet." />
+        ) : (
           <div className="xui-d-grid xui-grid-col-2 xui-md-grid-col-4 xui-grid-gap-1">
             <MetricCard title="Announcements" value={stats.total_announcements} icon={<Bullhorn size={24} />} iconBgColor="var(--info-light)" iconColor="var(--info)" />
             <MetricCard title="Categories" value={stats.total_categories} icon={<Category size={24} />} iconBgColor="var(--primary-100)" iconColor="var(--primary-700)" />
@@ -47,12 +47,12 @@ const CandidatePortalOverview = () => {
             <MetricCard title="Events" value={stats.total_events} icon={<Calendar size={24} />} iconBgColor="var(--success-light)" iconColor="var(--success)" />
             <MetricCard title="FAQs" value={stats.total_faqs} icon={<Catalog size={24} />} iconBgColor="#fff7ed" iconColor="#f59e0b" />
             <MetricCard title="File Storage" value={stats.total_file_storage} icon={<DocumentSet size={24} />} iconBgColor="var(--neutral-100)" iconColor="var(--neutral-600)" />
-            <MetricCard title="Gallery" value={stats.total_gallery} icon={<Image size={24} />} iconBgColor="var(--info-light)" iconColor="var(--info)" />
+            <MetricCard title="Gallery" value={stats.total_galleries} icon={<Image size={24} />} iconBgColor="var(--info-light)" iconColor="var(--info)" />
             <MetricCard title="Manifestos" value={stats.total_manifestos} icon={<Book size={24} />} iconBgColor="var(--primary-100)" iconColor="var(--primary-700)" />
-            <MetricCard title="Newsletter" value={stats.total_newsletter} icon={<LetterAa size={24} />} iconBgColor="#fce7f3" iconColor="#ed3337" />
+            <MetricCard title="Newsletter" value={stats.total_newsletters} icon={<LetterAa size={24} />} iconBgColor="#fce7f3" iconColor="#ed3337" />
             <MetricCard title="Posts" value={stats.total_posts} icon={<Edit size={24} />} iconBgColor="var(--success-light)" iconColor="var(--success)" />
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

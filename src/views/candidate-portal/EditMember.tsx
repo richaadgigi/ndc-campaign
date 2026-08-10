@@ -6,7 +6,7 @@ import { ArrowLeft, Renew } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import membersService from '../../services/members.service';
 import type { Member } from '../../services/members.service';
-import { Alert, showAlert } from '../../components/common';
+import { Alert, showAlert, ErrorState } from '../../components/common';
 import { extractErrorMessage, formatDate } from '../../utils/formatters';
 import { UserDetailSkeleton } from '../../components/skeletons';
 
@@ -54,12 +54,7 @@ const EditMember = () => {
         {loading ? (
           <UserDetailSkeleton />
         ) : fetchError ? (
-          <div className="xui-py-3 xui-text-center">
-            <p className="xui-opacity-6 xui-mb-1">{fetchError}</p>
-            <button onClick={fetchMember} className="xui-btn xui-btn-text xui-font-sz-80 xui-bdr-rad-half xui-font-w-500 xui-d-inline-flex xui-flex-ai-center xui-grid-gap-half" style={{ border: '1px solid var(--neutral-300)', color: 'var(--neutral-700)' }}>
-              <span className="icon-container"><Renew size={16} /></span> Retry
-            </button>
-          </div>
+          <ErrorState message={fetchError} onRetry={fetchMember} />
         ) : member ? (
           <div className="xui-d-grid xui-grid-col-1 xui-md-grid-col-2 xui-grid-gap-1">
             <div className="xui-bg-white xui-bdr-rad-half xui-overflow-hidden" style={{ border: '1px solid var(--neutral-200)' }}>

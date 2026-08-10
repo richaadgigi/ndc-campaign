@@ -1,4 +1,4 @@
-import api from './api';
+﻿import api from './api';
 
 export interface Enquiry {
   unique_id: string;
@@ -27,6 +27,16 @@ export interface EnquiryResponse {
   data: Enquiry | null;
 }
 
+export interface EnquiryStats {
+  total_enquiries: number;
+}
+
+export interface EnquiryStatsResponse {
+  success: boolean;
+  message: string;
+  data: EnquiryStats | null;
+}
+
 interface PaginationParams { page?: number; size?: number; orderBy?: string; sortBy?: 'ASC' | 'DESC'; module_unique_id: string; sub_module_unique_id?: string; }
 interface SearchParams extends PaginationParams { search: string; }
 interface FilterParams extends PaginationParams { start_date: string; end_date: string; }
@@ -38,38 +48,48 @@ const buildQueryParams = (params: Record<string, any>): string => {
 };
 
 const enquiriesService = {
+  getStats: async (params: Omit<PaginationParams, 'page' | 'size'>): Promise<EnquiryStatsResponse> => {
+    const response = await api.get(`/user/enquiry/stats?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
+  portalGetStats: async (params: Omit<PaginationParams, 'page' | 'size'>): Promise<EnquiryStatsResponse> => {
+    const response = await api.get(`/portal/enquiry/stats?${buildQueryParams(params)}`);
+    return response.data;
+  },
+
   add: async (data: Record<string, any>): Promise<EnquiryResponse> => {
     const response = await api.post(`/add/enquiry`, data);
     return response.data;
   },
 
   getAll: async (params: PaginationParams): Promise<EnquiriesResponse> => {
-    const response = await api.get(`/user/enquiries?${buildQueryParams(params)}`);
+    const response = await api.get(`/portal/enquiries?${buildQueryParams(params)}`);
     return response.data;
   },
 
   getOne: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<EnquiryResponse> => {
-    const response = await api.get(`/user/enquiry?${buildQueryParams({ unique_id, ...params })}`);
+    const response = await api.get(`/portal/enquiry?${buildQueryParams({ unique_id, ...params })}`);
     return response.data;
   },
 
   search: async (params: SearchParams): Promise<EnquiriesResponse> => {
-    const response = await api.get(`/user/search/enquiries?${buildQueryParams(params)}`);
+    const response = await api.get(`/portal/search/enquiries?${buildQueryParams(params)}`);
     return response.data;
   },
 
   filter: async (params: FilterParams): Promise<EnquiriesResponse> => {
-    const response = await api.get(`/user/filter/enquiries?${buildQueryParams(params)}`);
+    const response = await api.get(`/portal/filter/enquiries?${buildQueryParams(params)}`);
     return response.data;
   },
 
   complete: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<EnquiryResponse> => {
-    const response = await api.put(`/user/complete/enquiry?${buildQueryParams(params)}`, { unique_id });
+    const response = await api.put(`/portal/complete/enquiry?${buildQueryParams(params)}`, { unique_id });
     return response.data;
   },
 
   remove: async (unique_id: string, params: Omit<PaginationParams, 'page' | 'size'>): Promise<{ success: boolean; message: string }> => {
-    const response = await api.delete(`/user/enquiry?${buildQueryParams(params)}`, { data: { unique_id } });
+    const response = await api.delete(`/portal/enquiry?${buildQueryParams(params)}`, { data: { unique_id } });
     return response.data;
   },
 };

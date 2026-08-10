@@ -22,20 +22,22 @@ const AddFileStorage = () => {
   const [file, setFile] = useState('');
   const [fileType, setFileType] = useState('');
   const [filePublicId, setFilePublicId] = useState('');
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [candidateProfile, setCandidateProfile] = useState<Candidate | null>(null);
 
   const accessIds = getAccessIds('candidate-portal', 'file-storage');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ defaultValues: { title: '', candidate_unique_id: '' } });
+  const { register, handleSubmit, setValue } = useForm<FormData>({ defaultValues: { title: '', candidate_unique_id: '' } });
 
   useEffect(() => {
-    candidatesService.publicGetAll({ size: 200 }).then(res => {
-      if (res.success && res.data) setCandidates(Array.isArray(res.data) ? res.data : (res.data as any).rows || []);
+    if (!accessIds) return;
+    candidatesService.getProfile({ module_unique_id: accessIds.module_unique_id }).then(res => {
+      if (res.success && res.data) { setCandidateProfile(res.data); setValue('candidate_unique_id', res.data.unique_id); }
     }).catch(() => {});
-  }, []);
+  }, [accessIds?.module_unique_id]);
 
   const onSubmit = async (data: FormData) => {
     if (!accessIds) { setError('You do not have access to this module'); showAlert('error-alert'); return; }
+    if (!candidateProfile) { setError('Candidate profile not loaded'); showAlert('error-alert'); return; }
     if (!file) { setError('Please upload a file'); showAlert('error-alert'); return; }
     setLoading(true);
     try {
@@ -60,13 +62,10 @@ const AddFileStorage = () => {
         <p className="xui-font-sz-[16px] xui-opacity-4">Upload a file and optionally give it a title.</p>
         <hr className="xui-my-2" />
         <form onSubmit={handleSubmit(onSubmit)} className="xui-form" style={{ maxWidth: '500px' }}>
-          <div className="xui-form-box" {...(errors.candidate_unique_id && { 'xui-error': 'true' })}>
-            <label htmlFor="candidate_unique_id">Candidate *</label>
-            <select id="candidate_unique_id" {...register('candidate_unique_id', { required: 'Candidate is required' })}>
-              <option value="">Select a candidate</option>
-              {candidates.map(c => <option key={c.unique_id} value={c.unique_id}>{c.name}{(c as any).Position?.name ? ` (${(c as any).Position.name})` : c.state ? ` - ${c.state}` : ''}</option>)}
-            </select>
-            {errors.candidate_unique_id && <span className="message">{errors.candidate_unique_id.message}</span>}
+          <div className="xui-form-box">
+            <label>Candidate</label>
+            <input type="text" value={candidateProfile?.name || ''} readOnly style={{ backgroundColor: 'var(--neutral-50)', cursor: 'default' }} />
+            <input type="hidden" {...register('candidate_unique_id')} />
           </div>
           <div className="xui-form-box">
             <label htmlFor="title">Title (optional)</label>

@@ -7,7 +7,7 @@ import { extractErrorMessage } from '../../utils/formatters';
 import { useGeneral } from '../../context/GeneralContext';
 import eventsService from '../../services/events.service';
 import type { Event } from '../../services/events.service';
-import { Alert, showAlert } from '../../components/common';
+import { Alert, showAlert, ErrorState } from '../../components/common';
 import { ExportModal, ConfirmModal, AddEventModal, EventDetailModal, DayEventsModal } from '../../components/modals';
 import { modalShow } from '@richaadgigi/stylexui';
 import { TableSkeleton } from '../../components/skeletons';
@@ -182,10 +182,7 @@ const AllEvents = () => {
         {loading ? (
           <TableSkeleton rows={5} columns={7} />
         ) : fetchError ? (
-          <div className="xui-bg-white xui-bdr-rad-half xui-py-3 xui-text-center" style={{ border: '1px solid var(--neutral-200)' }}>
-            <p style={{ color: 'var(--error)', marginBottom: '12px' }}>{fetchError}</p>
-            <button onClick={fetchItems} className="xui-btn xui-font-sz-80 xui-bdr-rad-half" style={{ backgroundColor: 'var(--primary-600)', color: 'var(--secondary-700)' }}>Retry</button>
-          </div>
+          <ErrorState message={fetchError} onRetry={fetchItems} />
         ) : (
           <div style={{ border: '1px solid var(--neutral-200)', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fff' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--neutral-200)', backgroundColor: 'var(--neutral-50, #f9fafb)' }}>

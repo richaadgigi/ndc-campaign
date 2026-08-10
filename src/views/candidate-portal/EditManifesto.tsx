@@ -7,6 +7,7 @@ import { ArrowLeft } from '@carbon/icons-react';
 import { useGeneral } from '../../context/GeneralContext';
 import manifestosService from '../../services/manifestos.service';
 import type { Manifesto } from '../../services/manifestos.service';
+import candidatesService from '../../services/candidates.service';
 import { Alert, showAlert, FileUpload } from '../../components/common';
 import { extractErrorMessage } from '../../utils/formatters';
 import { FormSkeleton } from '../../components/skeletons';
@@ -38,7 +39,10 @@ const EditManifesto = () => {
     const fetchItem = async () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       try {
-        const res = await manifestosService.get(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId });
+        const profileRes = await candidatesService.getProfile({ module_unique_id: moduleId });
+        if (!profileRes.success || !profileRes.data) { setLoadingItem(false); return; }
+        const cId = profileRes.data.unique_id;
+        const res = await manifestosService.get(id, { module_unique_id: moduleId, sub_module_unique_id: subModuleId, candidate_unique_id: cId } as any);
         if (res.success && res.data) {
           setItem(res.data);
           reset({ title: res.data.title, short_description: res.data.short_description, year_published: res.data.year_published, pages: res.data.pages });

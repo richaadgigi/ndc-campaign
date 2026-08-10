@@ -16,7 +16,7 @@ import { modalShow } from '@richaadgigi/stylexui';
 import { extractErrorMessage, sanitizeHTML } from '../../utils/formatters';
 import { FormSkeleton } from '../../components/skeletons';
 
-interface FormData { title: string; alt_text: string; caption: string; category_unique_id: string; tags: string[]; }
+interface FormData { title: string; alt_text: string; category_unique_id: string; tags: string[]; }
 
 const EditPost = () => {
   const router = useRouter();
@@ -37,7 +37,7 @@ const EditPost = () => {
   const moduleId = accessIds?.module_unique_id;
   const subModuleId = accessIds?.sub_module_unique_id;
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormData>({ defaultValues: { title: '', alt_text: '', caption: '', category_unique_id: '', tags: [] } });
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormData>({ defaultValues: { title: '', alt_text: '', category_unique_id: '', tags: [] } });
   const tags = watch('tags');
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const EditPost = () => {
       if (!id || !moduleId || !subModuleId) { setLoadingItem(false); return; }
       const populate = (data: any) => {
         setItem(data);
-        reset({ title: data.title, alt_text: data.alt_text || '', caption: data.caption || '', category_unique_id: data.category_unique_id || '', tags: data.tags || [] });
+        reset({ title: data.title, alt_text: data.alt_text || '', category_unique_id: data.category_unique_id || '', tags: data.tags || [] });
         setDescription(data.description || '');
         setImage(data.image || '');
         setImagePublicId(data.image_public_id || '');
@@ -73,7 +73,13 @@ const EditPost = () => {
       const params = { module_unique_id: moduleId, sub_module_unique_id: subModuleId };
       const promises: Promise<any>[] = [];
 
-      promises.push(postsService.editDetails({ unique_id: id, title: data.title, alt_text: data.alt_text || null, caption: data.caption || null, description: cleanDescription, category_unique_id: data.category_unique_id || null, tags: data.tags.length > 0 ? data.tags : null }, params));
+      promises.push(postsService.editDetails({ unique_id: id, title: data.title, alt_text: data.alt_text || null }, params));
+      promises.push(postsService.editDescription({ unique_id: id, description: cleanDescription }, params));
+      promises.push(postsService.editTags({ unique_id: id, tags: data.tags.length > 0 ? data.tags : [] }, params));
+
+      if (data.category_unique_id && data.category_unique_id !== (item.category_unique_id || '')) {
+        promises.push(postsService.editCategory({ unique_id: id, category_unique_id: data.category_unique_id }, params));
+      }
 
       if (image !== (item.image || '') || imagePublicId !== (item.image_public_id || '')) {
         promises.push(postsService.editImage({ unique_id: id, image, image_public_id: imagePublicId }, params));
@@ -126,8 +132,6 @@ const EditPost = () => {
                 <input type="text" id="alt_text" placeholder="Enter alt text for SEO" {...register('alt_text')} />
               </div>
               <div className="xui-form-box">
-                <label htmlFor="caption">Caption</label>
-                <input type="text" id="caption" placeholder="Enter image caption" {...register('caption')} />
               </div>
               <div className="xui-form-box">
                 <label htmlFor="category_unique_id" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>Category <a href="/dashboard/candidate-portal/categories/add" target="_blank" rel="noopener noreferrer" style={{ fontSize: '11px', color: 'var(--primary-600)', fontWeight: 500, backgroundColor: 'var(--primary-100)', padding: '2px 10px', borderRadius: '20px', textDecoration: 'none' }}>+ Add new</a></label>

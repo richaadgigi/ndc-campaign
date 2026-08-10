@@ -88,8 +88,8 @@ const ViewEnquiry = () => {
                 {item.title}
               </h2>
               <div className="xui-d-flex xui-flex-ai-center xui-grid-gap-1 xui-mb-1-half xui-flex-wrap">
-                <span className={`xui-badge ${item.enquiry_status === 'completed' ? 'xui-badge-success' : 'xui-badge-warning'} xui-font-sz-70`}>
-                  {item.enquiry_status === 'completed' ? 'Completed' : 'Pending'}
+                <span className={`xui-badge ${item.enquiry_status?.toLowerCase() === 'completed' ? 'xui-badge-success' : 'xui-badge-warning'} xui-font-sz-70`}>
+                  {item.enquiry_status?.toLowerCase() === 'completed' ? 'Completed' : 'Pending'}
                 </span>
               </div>
               <p className="xui-font-sz-90" style={{ lineHeight: '1.8', color: 'var(--neutral-700)', whiteSpace: 'pre-wrap' }}>
@@ -137,8 +137,8 @@ const ViewEnquiry = () => {
 
                   <div className="xui-d-flex xui-flex-jc-space-between xui-flex-ai-center">
                     <span className="xui-font-sz-80 xui-opacity-5">Status</span>
-                    <span className={`xui-badge ${item.enquiry_status === 'completed' ? 'xui-badge-success' : 'xui-badge-warning'} xui-font-sz-70`}>
-                      {item.enquiry_status === 'completed' ? 'Completed' : 'Pending'}
+                    <span className={`xui-badge ${item.enquiry_status?.toLowerCase() === 'completed' ? 'xui-badge-success' : 'xui-badge-warning'} xui-font-sz-70`}>
+                      {item.enquiry_status?.toLowerCase() === 'completed' ? 'Completed' : 'Pending'}
                     </span>
                   </div>
 
@@ -162,7 +162,7 @@ const ViewEnquiry = () => {
                 </div>
               </div>
 
-              {item.enquiry_status !== 'completed' && canEdit && (
+              {item.enquiry_status?.toLowerCase() !== 'completed' && canEdit && (
                 <div className="xui-bg-white xui-bdr-rad-half xui-p-1" style={{ border: '1px solid var(--neutral-200)' }}>
                   <h4 className="xui-font-sz-85 xui-font-w-600 xui-mb-1" style={{ color: 'var(--neutral-800)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     Actions

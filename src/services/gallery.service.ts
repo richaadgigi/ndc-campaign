@@ -1,4 +1,4 @@
-import api from './api';
+﻿import api from './api';
 
 export interface Gallery {
   unique_id: string;
@@ -49,25 +49,25 @@ const buildQueryParams = (params: Record<string, any>): string => {
 const galleryService = {
   getAll: async (params: PaginationParams): Promise<GalleryListResponse> => {
     const query = buildQueryParams(params);
-    const response = await api.get(`/user/all/gallery?${query}`);
+    const response = await api.get(`/portal/all/gallery?${query}`);
     return response.data;
   },
 
   get: async (unique_id: string, params: { module_unique_id: string; sub_module_unique_id?: string }): Promise<GalleryResponse> => {
     const query = buildQueryParams({ unique_id, ...params });
-    const response = await api.get(`/user/gallery?${query}`);
+    const response = await api.get(`/portal/gallery?${query}`);
     return response.data;
   },
 
   search: async (params: SearchParams): Promise<GalleryListResponse> => {
     const query = buildQueryParams(params);
-    const response = await api.get(`/user/search/all/gallery?${query}`);
+    const response = await api.get(`/portal/search/all/gallery?${query}`);
     return response.data;
   },
 
   filter: async (params: FilterParams): Promise<GalleryListResponse> => {
     const query = buildQueryParams(params);
-    const response = await api.get(`/user/filter/all/gallery?${query}`);
+    const response = await api.get(`/portal/filter/all/gallery?${query}`);
     return response.data;
   },
 
@@ -76,7 +76,7 @@ const galleryService = {
     params: { module_unique_id: string; sub_module_unique_id?: string }
   ): Promise<{ success: boolean; message: string }> => {
     const query = buildQueryParams(params);
-    const response = await api.post(`/user/gallery/add?${query}`, data);
+    const response = await api.post(`/portal/gallery/add?${query}`, data);
     return response.data;
   },
 
@@ -85,7 +85,7 @@ const galleryService = {
     params: { module_unique_id: string; sub_module_unique_id?: string }
   ): Promise<{ success: boolean; message: string }> => {
     const query = buildQueryParams(params);
-    const response = await api.put(`/user/gallery/edit/details?${query}`, data);
+    const response = await api.put(`/portal/gallery/edit/details?${query}`, data);
     return response.data;
   },
 
@@ -94,7 +94,7 @@ const galleryService = {
     params: { module_unique_id: string; sub_module_unique_id?: string }
   ): Promise<{ success: boolean; message: string }> => {
     const query = buildQueryParams(params);
-    const response = await api.put(`/user/gallery/edit/tags?${query}`, data);
+    const response = await api.put(`/portal/gallery/edit/tags?${query}`, data);
     return response.data;
   },
 
@@ -103,7 +103,7 @@ const galleryService = {
     params: { module_unique_id: string; sub_module_unique_id?: string }
   ): Promise<{ success: boolean; message: string }> => {
     const query = buildQueryParams(params);
-    const response = await api.put(`/user/gallery/edit/image?${query}`, data);
+    const response = await api.put(`/portal/gallery/edit/file?${query}`, data);
     return response.data;
   },
 
@@ -112,7 +112,7 @@ const galleryService = {
     params: { module_unique_id: string; sub_module_unique_id?: string }
   ): Promise<{ success: boolean; message: string }> => {
     const query = buildQueryParams(params);
-    const response = await api.delete(`/user/gallery?${query}`, { data: { unique_id } });
+    const response = await api.delete(`/portal/gallery?${query}`, { data: { unique_id } });
     return response.data;
   },
 };

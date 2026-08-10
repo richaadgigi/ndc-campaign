@@ -22,6 +22,8 @@ async function handler(req: NextRequest, context: { params: Promise<{ path: stri
 
   const resHeaders = new Headers(upstream.headers);
   resHeaders.delete('content-encoding');
+  resHeaders.delete('content-length');
+  resHeaders.delete('transfer-encoding');
 
   return new NextResponse(upstream.body, {
     status: upstream.status,

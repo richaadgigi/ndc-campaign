@@ -4,7 +4,6 @@ export interface MemberRole {
   unique_id: string;
   name: string;
   stripped: string;
-  updated_by: string;
   status: number;
   createdAt: string;
   updatedAt: string;
